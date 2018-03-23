@@ -49,7 +49,7 @@ class Book extends Model
     /**
      * @return mixed
      */
-    public function countiesInWithBook()
+    public function countriesInWithBook()
     {
         return DB::table('books_stores')
             ->join('stores', 'stores.id', '=', 'books_stores.store_id')

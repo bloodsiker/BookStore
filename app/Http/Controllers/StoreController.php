@@ -43,7 +43,7 @@ class StoreController extends Controller
 
         $quantity = DB::table('books_stores')->where('book_id', $book->id)->where('store_id', $store->id)->sum('quantity');
 
-        $countries = $book->countiesInWithBook();
+        $countries = $book->countriesInWithBook();
 
         $cities = $book->bookShopInCity($book->id);
 

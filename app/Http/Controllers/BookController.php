@@ -19,7 +19,7 @@ class BookController extends Controller
 
         $quantity = DB::table('books_stores')->where('book_id', $book->id)->sum('quantity');
 
-        $countries = $book->countiesInWithBook();
+        $countries = $book->countriesInWithBook();
 
         $cities = $book->bookShopInCity($book->id);
 
