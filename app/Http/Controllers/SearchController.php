@@ -34,34 +34,25 @@ class SearchController extends Controller
             ->join('books_genres', 'books_genres.book_id', '=', 'books_stores.book_id')
             ->select('books.title', 'books.slug', 'books.image');
 
-
-        // Фильтрайия по по старнам
-        if($request->action == 'get_city_list'){
-            if($request->country_id != 'all'){
-                $response['cities'] = City::where('country_id', $request->country_id)->get()->toArray();
-                $query->where('countries.id', $request->country_id);
-            } else {
-                $response['cities'] = [];
-            }
+        if($request->country_id != 'all'){
+            $response['cities'] = City::where('country_id', $request->country_id)->get()->toArray();
+            $query->where('countries.id', $request->country_id);
+        } else {
+            $response['cities'] = [];
         }
 
-        // Фильтрайия по городам
-        if($request->action == 'get_store_list'){
+        if(!empty($request->city_id)){
             $response['stores'] = Store::where('city_id', $request->city_id)->get()->toArray();
             $query->where('cities.id', $request->city_id);
         }
 
-        // Фильтрайия по магазинам
-        if($request->action == 'get_store_books'){
+        if(!empty($request->store_id)){
             $query->where('stores.id', $request->store_id);
         }
 
-        //Фильтрация по жанрам
-        if($request->action == 'get_genres_books'){
-            if(!empty($request->genres)){
-                $genres = explode(',', $request->genres);
-                $query->whereIn('books_genres.genre_id',  $genres);
-            }
+        if(!empty($request->genres)){
+            $genres = explode(',', $request->genres);
+            $query->whereIn('books_genres.genre_id',  $genres);
         }
 
         $booksList = $query->groupBy('books_stores.book_id')

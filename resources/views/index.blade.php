@@ -30,7 +30,7 @@
                 <form class="form-horizontal form-filter p-3 mt-4" id="filter">
                     <div class="form-group">
                         <label for="country">Страна</label>
-                        <select class="form-control" name="country" id="country" onchange="changeCountry(this)">
+                        <select class="form-control" name="country" id="country" onchange="applyFilter(event)">
                             <option value="all">Все страны</option>
                             @foreach($countryList as $country)
                                 <option value="{{ $country->id }}">{{ $country->country_name }}</option>
@@ -39,13 +39,13 @@
                     </div>
                     <div class="form-group">
                         <label for="city">Город</label> <span class="load_city"></span>
-                        <select class="form-control" name="city" id="city" onchange="changeCity(this)">
+                        <select class="form-control" name="city" id="city" onchange="applyFilter(event)">
                             <option value="">Not select</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="store">Магазин</label> <span class="load_store"></span>
-                        <select class="form-control" name="store" id="store" onchange="changeStore(this)">
+                        <select class="form-control" name="store" id="store" onchange="applyFilter(event)">
                             <option value="">Not select</option>
                         </select>
                     </div>
@@ -54,7 +54,7 @@
                             @foreach($genresList as $genre)
                                 <div>
                                     <label class="form-check-label">
-                                        <input type="checkbox" name="genre" value="{{ $genre->id }}" onchange="changeGenre(event)" class="form-check-input">
+                                        <input type="checkbox" name="genre" value="{{ $genre->id }}" onchange="applyFilter(event)" class="form-check-input">
                                         {{ $genre->genre }}
                                     </label>
                                 </div>

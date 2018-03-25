@@ -1,149 +1,90 @@
-let changeCountry = (country) => {
-    let country_id = country.value;
-    $('.load_city').html('<i class="fa fa-spin fa-spinner"></i>');
-    $('.load_store').html('<i class="fa fa-spin fa-spinner"></i>');
+// Filters
+let applyFilter = function (event) {
 
-    let selectStore = $('form#filter').find('select#store');
+    let _form = $('form#filter');
+    let element = event.target.attributes.name.value;
+
+    let onChangeCountry = false;
+    if(element == 'country'){
+        $('.load_city').html('<i class="fa fa-spin fa-spinner"></i>');
+        onChangeCountry = true;
+        _form.find('select#city').html('');
+        _form.find('select#store').html('');
+    }
+    let onChangeCity = false;
+    if(element == 'city'){
+        $('.load_store').html('<i class="fa fa-spin fa-spinner"></i>');
+        onChangeCity = true;
+        _form.find('select#store').html('');
+    }
+
+    let selectCountry = null;
+    let selectCity = null;
+    let selectStore = null;
+    let changeGenres = null;
+    selectCountry = _form.find('select#country').val();
+    selectCity = _form.find('select#city').val();
+    selectStore = _form.find('select#store').val();
+
+    changeGenres = $('#filter input:checkbox:checked').map(function() {return this.value;}).get().join(',');
+
+    let filter = {country_id: selectCountry, city_id: selectCity, store_id: selectStore, genres: changeGenres};
+    console.log(filter);
+
 
     $.ajax({
         url: "/filter-ajax",
         type: "POST",
-        data: {country_id : country_id, action : 'get_city_list'},
+        data: filter,
         cache: false,
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
         success: function (response) {
-            var city = "<option value=''></option>";
-            var books = "";
 
-            for (var i = 0; i < response.cities.length; i++) {
-                var id = response.cities[i].id,
-                    city_name = response.cities[i].city_name,
-                    country_id = response.cities[i].country_id;
+            if(selectCountry && onChangeCountry){
 
-                city += "<option value='"+id+"' data-country='"+country_id+"'>"+city_name+"</option>";
+                var city = "<option value=''></option>";
+
+                for (var i = 0; i < response.cities.length; i++) {
+                    var id = response.cities[i].id,
+                        city_name = response.cities[i].city_name,
+                        country_id = response.cities[i].country_id;
+
+                    city += "<option value='"+id+"' data-country='"+country_id+"'>"+city_name+"</option>";
+                }
+                _form.find('select#city').html(city);
+                _form.find('select#store').html('');
+                $('.load_city').html('');
             }
 
-            for (var i = 0; i < response.books.length; i++){
-                var title = response.books[i].title,
-                    slug = response.books[i].slug,
-                    image = response.books[i].image;
-                books += renderBook(title, slug, image)
+            if(selectCity && onChangeCity){
+                var store = "<option value=''></option>";
+
+                for (var i = 0; i < response.stores.length; i++) {
+                    var id = response.stores[i].id,
+                        store_name = response.stores[i].store_name,
+                        city_id = response.stores[i].city_id;
+
+                    store += "<option value='"+id+"' data-city='"+city_id+"'>"+store_name+"</option>";
+                }
+                _form.find('select#store').html(store);
+                $('.load_store').html('');
             }
 
-            $('form#filter').find('select#city').html(city);
-            selectStore.html('');
-            $('.load_city').html('');
-            $('.load_store').html('');
-            $('#list-books').after(preloader);
-            setTimeout(function() {
-                remove($('.preloader'));
-                $('#list-books').html(books);
-                }, 1000);
-        }
-    });
-    return false;
-};
-
-let changeCity = (city) => {
-    let city_id = city.value;
-    $('.load_store').html('<i class="fa fa-spin fa-spinner"></i>');
-
-    $.ajax({
-        url: "/filter-ajax",
-        type: "POST",
-        data: {city_id : city_id, action : 'get_store_list'},
-        cache: false,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function (response) {
-            var store = "<option value=''></option>";
-            var books = "";
-            for (var i = 0; i < response.stores.length; i++) {
-                var id = response.stores[i].id,
-                    store_name = response.stores[i].store_name,
-                    city_id = response.stores[i].city_id;
-
-                store += "<option value='"+id+"' data-city='"+city_id+"'>"+store_name+"</option>";
+            let books = "";
+            let successBooks = response.books.length;
+            if(successBooks > 0){
+                for (var i = 0; i < successBooks; i++){
+                    var title = response.books[i].title,
+                        slug = response.books[i].slug,
+                        image = response.books[i].image;
+                    books += renderBook(title, slug, image)
+                }
+            } else {
+                books = "<div class='col-md-12 text-center mt-4'><h2>По заданным параметрам книг не найдено</h2></div>";
             }
 
-            for (var i = 0; i < response.books.length; i++){
-                var title = response.books[i].title,
-                    slug = response.books[i].slug,
-                    image = response.books[i].image;
-                books += renderBook(title, slug, image)
-            }
-
-            $('form#filter').find('select#store').html(store);
-            $('.load_store').html('');
-            $('#list-books').after(preloader);
-            setTimeout(function() {
-                remove($('.preloader'));
-                $('#list-books').html(books);
-            }, 1000);
-        }
-    });
-    return false;
-};
-
-let changeStore = (store) => {
-    let store_id = store.value;
-    $('.load_store').html('<i class="fa fa-spin fa-spinner"></i>');
-
-    $.ajax({
-        url: "/filter-ajax",
-        type: "POST",
-        data: {store_id : store_id, action : 'get_store_books'},
-        cache: false,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function (response) {
-            var books = "";
-            for (var i = 0; i < response.books.length; i++){
-                var title = response.books[i].title,
-                    slug = response.books[i].slug,
-                    image = response.books[i].image;
-                books += renderBook(title, slug, image)
-            }
-            $('.load_store').html('');
-            $('#list-books').after(preloader);
-            setTimeout(function() {
-                remove($('.preloader'));
-                $('#list-books').html(books);
-            }, 1000);
-        }
-    });
-    return false;
-};
-
-
-
-let changeGenre = function (event) {
-
-    let genres = $('#filter input:checkbox:checked').map(function() {return this.value;}).get();
-
-    genres = genres.join(',');
-
-    $.ajax({
-        url: "/filter-ajax",
-        type: "POST",
-        data: {genres : genres, action : 'get_genres_books'},
-        cache: false,
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        },
-        success: function (response) {
-            var books = "";
-            for (var i = 0; i < response.books.length; i++){
-                var title = response.books[i].title,
-                    slug = response.books[i].slug,
-                    image = response.books[i].image;
-                books += renderBook(title, slug, image)
-            }
-            $('.load_store').html('');
             $('#list-books').after(preloader);
             setTimeout(function() {
                 remove($('.preloader'));
@@ -153,6 +94,7 @@ let changeGenre = function (event) {
     });
 };
 
+// validate Book Title
 $('#find-title').submit(function (e) {
     e.preventDefault();
     var book_title = $('#find-title').find('input[name=book_title]').val();
@@ -164,6 +106,8 @@ $('#find-title').submit(function (e) {
     }
 });
 
+
+// validate Author
 $('#find-author').submit(function (e) {
     e.preventDefault();
     var book_title = $('#find-author').find('input[name=author]').val();
@@ -174,7 +118,6 @@ $('#find-author').submit(function (e) {
         e.target.submit();
     }
 });
-
 
 
 //Render card book
