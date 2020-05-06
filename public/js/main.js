@@ -26,7 +26,9 @@ let applyFilter = function (event) {
     selectCity = _form.find('select#city').val();
     selectStore = _form.find('select#store').val();
 
-    changeGenres = $('#filter input:checkbox:checked').map(function() {return this.value;}).get().join(',');
+    changeGenres = $('#filter input:checkbox:checked').map(function() { return this.value;}).get().join(',');
+
+    console.log(changeGenres);
 
     let filter = {country_id: selectCountry, city_id: selectCity, store_id: selectStore, genres: changeGenres};
     console.log(filter);
@@ -122,59 +124,48 @@ $('#find-author').submit(function (e) {
 
 //Render card book
 let renderBook = (title, slug, image) => {
-    let book_card;
-    return book_card = "<div class='col-sm-6 col-md-3 mt-4'>" +
-        "                            <div class='card card-inverse card-info'>" +
-        "                                <a href='/book/" +  slug + "'>" +
-        "                                    <img class='card-img-top' src='" +  image + "' alt='" +  title + "'>" +
-        "                                </a>" +
-        "                                <div class='card-block'>" +
-        "                                    <h4 class='card-title'>" +  title + "</h4>" +
-        "                                </div>" +
-        "                                <div class='card-footer'>" +
-        "                                    <a href='/book/" +  slug + "' class='btn btn-info float-right btn-sm'>Посмотреть</a>" +
-        "                                </div>" +
-        "                            </div>" +
-        "                        </div>"
+    return  `<div class='col-sm-6 col-md-3 mt-4'>
+                <div class='card card-inverse card-info'>
+                    <a href='/book/${slug}'>
+                        <img class='card-img-top' src='${image}' alt='${title}'>
+                    </a>
+                    <div class='card-block'>
+                        <h4 class='card-title'>${title}</h4>
+                    </div>
+                    <div class='card-footer'>
+                        <a href='/book/${slug}' class='btn btn-info float-right btn-sm'>Посмотреть</a>
+                    </div>
+                </div>
+            </div>`
 };
 
 /// Remove element
-let remove = (elem) =>{
-    elem.remove();
-};
+const remove = elem => elem.remove();
 
 
 // Load preloader
-var preloader = "<div class='preloader'><div class='spinner'><i class='fa fa-spin fa-spinner'></i></div></div>";
+const preloader = "<div class='preloader'><div class='spinner'><i class='fa fa-spin fa-spinner'></i></div></div>";
 
 
 // Author autosuggest
 $( function() {
-    $(document).on('keyup', '#author', function (event) {
-        console.log(event.target.value.length);
-        if (event.target.value.length < 1) {
-            return false;
-        } else {
-            var author = $('#author').val();
 
-            $.ajax({
-                url: "/search-author",
-                type: "POST",
-                data: {author: author},
-                cache: false,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function (response) {
-                    console.log(response);
-                    let author_list = response.map(function(value) {return value.author_name;});
-                    if (author_list.length > 0) {
-                        $("#author").autocomplete({
-                            source: author_list
-                        });
-                    }
-                }
-            });
+    $.ajax({
+        url: "/search-author",
+        type: "POST",
+        data: {author: author},
+        cache: false,
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function (response) {
+            console.log(response);
+            let author_list = response.map(function(value) {return value.author_name;});
+            if (author_list.length > 0) {
+                $("#author").autocomplete({
+                    source: author_list
+                });
+            }
         }
     });
 });
